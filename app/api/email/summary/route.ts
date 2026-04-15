@@ -245,7 +245,7 @@ async function sendDigest(): Promise<{ ok: boolean; error?: string }> {
     body: JSON.stringify({
       personalizations: [{ to: [{ email: RECIPIENT }] }],
       from: { email: RECIPIENT, name: "Tamy's Task Tracker" },
-      subject: `Task Digest — ${formattedDate}`,
+      subject: `Running to do's — ${formattedDate}`,
       content: [
         { type: "text/plain", value: text },
         { type: "text/html",  value: html },

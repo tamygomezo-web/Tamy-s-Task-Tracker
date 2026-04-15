@@ -57,6 +57,9 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "done">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"due_date" | "recently_added">("due_date");
+  const [dueDateFilter, setDueDateFilter] = useState<string>("");
+  const [backBurnerOnly, setBackBurnerOnly] = useState(false);
 
   // Form state
   const [fTitle, setFTitle] = useState("");
@@ -194,12 +197,24 @@ export default function Home() {
     setEditNotes(task.notes ?? "");
   }
 
-  const filtered = tasks.filter((t) => {
-    if (filter === "active" && t.done) return false;
-    if (filter === "done" && !t.done) return false;
-    if (categoryFilter !== "all" && t.category !== categoryFilter) return false;
-    return true;
-  });
+  const filtered = tasks
+    .filter((t) => {
+      if (filter === "active" && t.done) return false;
+      if (filter === "done" && !t.done) return false;
+      if (categoryFilter !== "all" && t.category !== categoryFilter) return false;
+      if (backBurnerOnly && t.due_date) return false;
+      if (dueDateFilter && (!t.due_date || t.due_date > dueDateFilter)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "recently_added") {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
 
   return (
     <div
@@ -374,6 +389,95 @@ export default function Home() {
             </button>
           ))}
         </div>
+
+        {/* Sort row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 11, color: "#555", textTransform: "uppercase", letterSpacing: "0.5px", width: 60, flexShrink: 0 }}>
+            Sort
+          </span>
+          {(["due_date", "recently_added"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              style={{
+                padding: "4px 14px",
+                borderRadius: 20,
+                border: sortBy === s ? "1px solid #e8e8e8" : "1px solid #333",
+                backgroundColor: sortBy === s ? "#e8e8e8" : "transparent",
+                color: sortBy === s ? "#0c0c0e" : "#888",
+                cursor: "pointer",
+                fontSize: 13,
+                fontFamily: "Calibri, 'Segoe UI', sans-serif",
+              }}
+            >
+              {s === "due_date" ? "Due Date" : "Recently Added"}
+            </button>
+          ))}
+        </div>
+
+        {/* Due row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "#555", textTransform: "uppercase", letterSpacing: "0.5px", width: 60, flexShrink: 0 }}>
+            Due
+          </span>
+          <button
+            onClick={() => { setBackBurnerOnly(false); setDueDateFilter(""); }}
+            style={{
+              padding: "4px 14px",
+              borderRadius: 20,
+              border: !backBurnerOnly && !dueDateFilter ? "1px solid #e8e8e8" : "1px solid #333",
+              backgroundColor: !backBurnerOnly && !dueDateFilter ? "#e8e8e8" : "transparent",
+              color: !backBurnerOnly && !dueDateFilter ? "#0c0c0e" : "#888",
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: "Calibri, 'Segoe UI', sans-serif",
+            }}
+          >
+            Any
+          </button>
+          <button
+            onClick={() => { setBackBurnerOnly(true); setDueDateFilter(""); }}
+            style={{
+              padding: "4px 14px",
+              borderRadius: 20,
+              border: backBurnerOnly ? "1px solid #e8e8e8" : "1px solid #333",
+              backgroundColor: backBurnerOnly ? "#e8e8e8" : "transparent",
+              color: backBurnerOnly ? "#0c0c0e" : "#888",
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: "Calibri, 'Segoe UI', sans-serif",
+            }}
+          >
+            Back Burner
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 12, color: "#444" }}>Due by</span>
+            <input
+              type="date"
+              value={dueDateFilter}
+              onChange={(e) => { setDueDateFilter(e.target.value); setBackBurnerOnly(false); }}
+              style={{
+                padding: "4px 10px",
+                borderRadius: 20,
+                border: dueDateFilter ? "1px solid #e8e8e8" : "1px solid #333",
+                backgroundColor: "transparent",
+                color: dueDateFilter ? "#e8e8e8" : "#555",
+                cursor: "pointer",
+                fontSize: 13,
+                fontFamily: "Calibri, 'Segoe UI', sans-serif",
+                outline: "none",
+              }}
+            />
+            {dueDateFilter && (
+              <button
+                onClick={() => setDueDateFilter("")}
+                style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18, padding: 0, lineHeight: 1 }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Task list */}
@@ -486,11 +590,11 @@ export default function Home() {
                           </span>
                         </div>
                         <div style={{ display: "flex", gap: 14, marginTop: 5, flexWrap: "wrap" }}>
-                          {task.due_date && (
-                            <span style={{ fontSize: 12, color: overdue ? "#FF4444" : "#666" }}>
-                              {overdue ? "⚠ Overdue · " : "📅 "}{formatDate(task.due_date)}
-                            </span>
-                          )}
+                          <span style={{ fontSize: 12, color: overdue ? "#FF4444" : task.due_date ? "#666" : "#3a3a3a" }}>
+                            {task.due_date
+                              ? (overdue ? "⚠ Overdue · " : "📅 ") + formatDate(task.due_date)
+                              : "Back burner"}
+                          </span>
                           {task.reminder !== "None" && (
                             <span style={{ fontSize: 12, color: "#555" }}>
                               🔔 {task.reminder}
