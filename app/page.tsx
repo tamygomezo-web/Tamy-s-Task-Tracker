@@ -590,7 +590,7 @@ export default function Home() {
                           </span>
                         </div>
                         <div style={{ display: "flex", gap: 14, marginTop: 5, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 12, color: overdue ? "#FF4444" : task.due_date ? "#666" : "#3a3a3a" }}>
+                          <span style={{ fontSize: 12, color: overdue ? "#FF4444" : task.due_date ? "#666" : "#555" }}>
                             {task.due_date
                               ? (overdue ? "⚠ Overdue · " : "📅 ") + formatDate(task.due_date)
                               : "Back burner"}
