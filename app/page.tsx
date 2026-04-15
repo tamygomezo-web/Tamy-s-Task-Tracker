@@ -66,6 +66,7 @@ export default function Home() {
   const [fNotes, setFNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [emailState, setEmailState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
   // Edit state
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -96,6 +97,17 @@ export default function Home() {
     const data = await res.json();
     setTasks(data);
     setLoading(false);
+  }
+
+  async function handleEmailDigest() {
+    setEmailState("sending");
+    try {
+      const res = await fetch("/api/email/summary", { method: "POST" });
+      setEmailState(res.ok ? "sent" : "failed");
+    } catch {
+      setEmailState("failed");
+    }
+    setTimeout(() => setEmailState("idle"), 3000);
   }
 
   function resetForm() {
@@ -230,6 +242,32 @@ export default function Home() {
             }}
           >
             Log out
+          </button>
+          <button
+            onClick={handleEmailDigest}
+            disabled={emailState === "sending"}
+            style={{
+              background: "none",
+              border: "none",
+              color: emailState === "sent"
+                ? "#4ade80"
+                : emailState === "failed"
+                ? "#FF4444"
+                : "#555",
+              cursor: emailState === "sending" ? "not-allowed" : "pointer",
+              fontSize: 13,
+              fontFamily: "Calibri, 'Segoe UI', sans-serif",
+              padding: 0,
+              transition: "color 0.2s",
+            }}
+          >
+            {emailState === "sending"
+              ? "Sending..."
+              : emailState === "sent"
+              ? "Sent!"
+              : emailState === "failed"
+              ? "Failed"
+              : "Email Digest"}
           </button>
           <button
             onClick={() => setShowForm(true)}
