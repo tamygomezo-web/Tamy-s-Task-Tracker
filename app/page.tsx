@@ -213,27 +213,46 @@ export default function Home() {
             Tamy&apos;s Task Tracker
           </h1>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: "50%",
-            backgroundColor: "#e8e8e8",
-            color: "#0c0c0e",
-            fontSize: 24,
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: 300,
-            lineHeight: 1,
-          }}
-          title="Add task"
-        >
-          +
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button
+            onClick={async () => {
+              await fetch("/api/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#555",
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: "Calibri, 'Segoe UI', sans-serif",
+              padding: 0,
+            }}
+          >
+            Log out
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: "50%",
+              backgroundColor: "#e8e8e8",
+              color: "#0c0c0e",
+              fontSize: 24,
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 300,
+              lineHeight: 1,
+            }}
+            title="Add task"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
