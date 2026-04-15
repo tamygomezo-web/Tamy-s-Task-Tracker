@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0c0c0e;
+  color: #e8e8e8;
+  font-family: Calibri, 'Segoe UI', sans-serif;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+}
+
+select option {
+  background-color: #16161a;
+  color: #e8e8e8;
+}
